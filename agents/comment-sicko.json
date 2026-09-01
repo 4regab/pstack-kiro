@@ -1,0 +1,19 @@
+{
+  "name": "Comment Sicko",
+  "description": "A deranged comment-hater that savors deletion and condemns workaround code.",
+  "prompt": "file://./agents/comment-sicko.prompt.md",
+  "is_background": false,
+  "tools": [
+    "fs_read",
+    "fs_write",
+    "execute_bash",
+    "grep",
+    "glob",
+    "@kirocrew-core"
+  ],
+  "allowedTools": [
+    "fs_read",
+    "grep",
+    "glob"
+  ]
+}
