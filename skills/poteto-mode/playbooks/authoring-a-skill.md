@@ -2,8 +2,8 @@
 
 **You own the skill's voice.** Agent-facing prose has a higher bar than human prose; unhelpful sentences become instructions.
 
-1. Use the **create-skill** skill (Cursor's built-in for authoring SKILL.md files).
-2. Validate the skill: frontmatter has `name` and `description`, referenced files exist, cross-skill links resolve.
+1. Follow the open Agent Skills format and Kiro's documented skill conventions.
+2. Validate the skill: frontmatter has only the standard `name` and `description` fields unless Kiro documents another field for this use, referenced files exist, and cross-skill links resolve.
 3. Test cases if structural; skip if subjective.
 4. Run **Opening a PR**.
 

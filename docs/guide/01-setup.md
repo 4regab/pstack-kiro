@@ -1,49 +1,77 @@
 # Set up pstack
 
-In this page you install the plugin, pick which models pstack uses, and run your first task. Setup is one command plus a short conversation.
+Install the Power first. Custom agents are a separate, manual choice.
 
-## Install the plugin
+## Install the Power in Kiro IDE 1.0
 
-In a Cursor chat, run:
+1. Open the **Powers** panel.
+2. Choose **Add Custom Power**.
+3. Add the GitHub repository or select its local directory.
+4. Confirm that `pstack` is installed and active.
 
-```text
-/add-plugin pstack
-```
+The repository-root `plugin.json` uses Agent Plugins 1.0. Kiro discovers the bundled `skills/` through the Power.
 
-Cursor confirms the plugin is installed.
+## Use the installed Power from Kiro CLI 3.0
 
-## Pick your models
-
-Run:
-
-```text
-/setup-pstack
-```
-
-[`/setup-pstack`](../../skills/setup-pstack/SKILL.md) detects the models you have access to, shows you each role (code delegates, judgment, the review panels), and asks what you want. Answer the questions. It writes `~/.cursor/rules/pstack-models.mdc`, a small rule every pstack skill reads.
-
-You only override what you care about. A role with no line in the rule keeps the skill's default. To restore a default later, delete that role's line, or just run `/setup-pstack` again.
-
-You might be wondering what happens if you use Auto. Set a role to `inherit-parent` or `auto` and pstack omits the subagent `model` field, so the subagent inherits your parent chat model. Both values mean the same thing, and neither is a model slug. For a panel role the value is a list, and one subagent runs per entry, so the list length sets the panel size. Setup also configures `swarm workers`, the default model for every `/swarm` worker unless a race names a model for each arm.
-
-## Accept the verification offer, or don't
-
-At the end of setup, `/setup-pstack` looks for a way to prove app behavior in your project, either a `verify-*` skill or an existing harness. If it finds neither, it offers once to generate one with [`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md).
-
-Say yes and it writes `.cursor/skills/verify-<app>/`, a project-local skill that teaches agents to drive your app the way a user does. It proves the skill works once before handing it over. Say no and setup moves on. You can run `/create-verification-skill` yourself any time. [Verify and ship](./06-verify-and-ship.md#create-a-project-verification-skill) covers when it earns its place.
-
-After setup, start a new chat. The model rule applies to new sessions.
-
-## Run your first task
-
-Pick something real but small, and describe it the way you'd describe it to a colleague:
+Start the v3 CLI and inspect detected Powers:
 
 ```text
-/poteto-mode add a --json flag to this command. text output stays byte-identical. verify both.
+kiro-cli --v3
+/powers
 ```
 
-Watch the todo list. The first item is always "read the Principles section". The rest are the matched playbook's steps copied in, the Feature playbook for this prompt. If `/poteto-mode` skips a step, the step stays in the list with `skip: <reason>`, so you can see what it chose not to do.
+CLI v3 automatically detects Powers installed by the IDE. You do not need to copy the Power into a second CLI-specific directory.
 
-From here you can type normal follow-ups. `/poteto-mode` is sticky. It stays on for the conversation until you opt out by saying so.
+## Install custom agents only if you need them
+
+Agent Plugins 1.0 does not install custom-agent profiles. Start from a local clone of this repository and copy each JSON file with its adjacent prompt file to either the target project or global agent directory.
+
+Project scope:
+
+```bash
+PSTACK_DIR="$PWD"
+TARGET_PROJECT="/path/to/your/project"
+mkdir -p "$TARGET_PROJECT/.kiro/agents"
+cp "$PSTACK_DIR/agents/poteto-agent.json" "$PSTACK_DIR/agents/poteto-agent.prompt.md" "$TARGET_PROJECT/.kiro/agents/"
+cp "$PSTACK_DIR/agents/comment-sicko.json" "$PSTACK_DIR/agents/comment-sicko.prompt.md" "$TARGET_PROJECT/.kiro/agents/"
+```
+
+Global scope:
+
+```bash
+PSTACK_DIR="$PWD"
+mkdir -p ~/.kiro/agents
+cp "$PSTACK_DIR/agents/poteto-agent.json" "$PSTACK_DIR/agents/poteto-agent.prompt.md" ~/.kiro/agents/
+cp "$PSTACK_DIR/agents/comment-sicko.json" "$PSTACK_DIR/agents/comment-sicko.prompt.md" ~/.kiro/agents/
+```
+
+The `file://./...` prompt URI resolves relative to the copied JSON file. Keep each pair together. Project profiles override same-named global profiles.
+
+`poteto-agent` can delegate through Kiro's native `subagent` category, maintain multi-step work through `todo_list`, and include installed Powers. `comment-sicko` exposes only `read`, so it can report comment findings but cannot edit files.
+
+## Validate the checkout
+
+From the repository root, run:
+
+```bash
+node scripts/validate-package.mjs
+node scripts/test-validator.mjs
+```
+
+The dependency-free scripts need Node.js 18 or newer. The first validates the current package; the second proves representative invalid manifest, agent, skill, link, and CLI-command mutations are rejected.
+
+## Create project-local verification instructions when useful
+
+If a project lacks a repeatable way to prove behavior, invoke [`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md). Project-local skills belong under `.kiro/skills/`. Durable repository instructions that should apply beyond a single skill belong under `.kiro/steering/`.
+
+Do not generate either preemptively. An existing test, script, or native harness is cheaper and easier to maintain.
+
+## Run one real task
+
+```text
+/poteto-mode add a --json flag to this command. text output stays byte-identical. run and show both forms.
+```
+
+Invoke `/poteto-mode` again on later turns when you want its workflow applied. Power activation and conversation context can help Kiro select relevant material, but pstack does not claim a permanent sticky mode.
 
 Next: [Route work through `/poteto-mode`](./02-poteto-mode.md).

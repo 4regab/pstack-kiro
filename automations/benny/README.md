@@ -1,23 +1,23 @@
-# benny
+# Benny
 
-benny gives you two cursor automations for slack issue reports. one triages each report. the other reproduces confirmed bugs and may prepare a small draft fix.
+Benny is a provider-neutral blueprint for two externally triggered Slack issue workflows: one triages reports; the other reproduces confirmed bugs and may prepare a bounded draft fix.
 
-the files in this directory are dormant setup and automation sources. they do not appear as slash skills.
+It does not implement Slack ingestion, scheduling, queues, or CI. Kiro IDE and Kiro CLI do not provide Slack event scheduling. Existing external Slack Events/queue/CI or scheduler infrastructure invokes a Kiro CLI 3.0 headless session with the committed launch prompt and event envelope:
 
-## set it up
-
-1. point cursor at [`FOR_AGENTS.md`](./FOR_AGENTS.md) and name the target repository.
-2. let setup merge this whole directory into the target at `.cursor/automations/benny/`. it must preserve destination-only files and review conflicts instead of overwriting local edits.
-3. let setup enable pstack in the target repository's `.cursor/settings.json` for shared dependencies:
-
-```json
-{
-	"plugins": {
-		"pstack": { "enabled": true }
-	}
-}
+```sh
+kiro-cli chat --no-interactive "$PROMPT"
 ```
 
-4. keep user-owned configuration outside the copied pack, for example in `.cursor/benny/`. adapt [`configuration.example.yaml`](./templates/configuration.example.yaml) and [`feature-map.example.md`](./skills/reproduce-and-fix-issues/references/feature-map.example.md).
-5. commit `.cursor/settings.json`, `.cursor/automations/benny/`, and any secret-free configuration before enabling either automation.
-6. review each new automation draft or update existing automations in their editors. then send a harmless test report and verify every source-channel post stays in the original thread.
+Because Benny calls tools in a non-interactive session, the external runner must render separate least-privilege `--trust-tools` categories for triage and repro. It must launch each workflow with an isolated Kiro CLI MCP configuration that matches that workflow's committed required-server list and use `--require-mcp-startup`. Do not use `--trust-all-tools`.
+
+Kiro Web Automations are separate and out of scope for this IDE/CLI port.
+
+## Set it up
+
+1. Merge this directory into the target repository at `.benny/automations/benny/`. Preserve destination-only files and review conflicts instead of overwriting local edits.
+2. Adapt and commit the secret-free [`configuration.example.yaml`](./templates/configuration.example.yaml), [`routing.example.md`](./skills/triage-issue-reports/references/routing.example.md), and [`feature-map.example.md`](./skills/reproduce-and-fix-issues/references/feature-map.example.md) under `.benny/`.
+3. Configure deployment-specific Slack, tracker, repository, and control adapters. Their MCP/tool names are configured inputs, not names supplied by Benny.
+4. Configure external ingress and workers to validate Slack events, preserve immutable root-thread coordinates, check out the committed revision, and invoke the matching committed prompt template through `kiro-cli chat --no-interactive`.
+5. Keep secrets in the external runner's secret store or environment, then run the adapter-readiness and harmless thread-safety checks in [`skills/setup-benny/SKILL.md`](./skills/setup-benny/SKILL.md).
+
+The operational files remain named `SKILL.md` because they live outside root `skills/`; they are direct prompt/runbook documents without skill frontmatter or slash-command behavior.

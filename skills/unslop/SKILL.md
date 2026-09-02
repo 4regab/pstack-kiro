@@ -1,10 +1,7 @@
 ---
 name: unslop
 description: Cut AI tells from any writing. Must always apply.
-triggers: unslop
 ---
-
-> Ported from cursor/pstack.
 
 
 # Unslop

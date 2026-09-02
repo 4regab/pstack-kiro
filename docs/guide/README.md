@@ -1,30 +1,26 @@
 # The pstack guide
 
-pstack works best when you stop micromanaging the agent. You describe what you want and how you'll know it's done. `/poteto-mode` picks the playbook, runs the other skills as the steps need them, and shows you the evidence. This guide teaches that habit with realistic prompts.
+pstack works best when you describe the result and the evidence that will prove it. `/poteto-mode` supplies the workflow; Kiro supplies Powers, custom agents, native subagents, local sessions, and optional cloud execution.
 
-Here's what you'll learn:
+1. [Set up pstack](./01-setup.md). Install the Power, optionally copy the custom agents, and validate the package.
+2. [Route work through `/poteto-mode`](./02-poteto-mode.md). Give it a goal and invoke it when you want the workflow applied.
+3. [Understand the code](./03-understand.md). Use source, configured integrations, and explicit transcript exports before editing.
+4. [Design the change](./04-design.md). Use Kiro-native subagents for independent attempts and bounded review.
+5. [Build and clean the change](./05-build-and-clean.md). Reproduce, implement, and keep the diff small.
+6. [Verify and ship](./06-verify-and-ship.md). Check the real artifact, then use separately configured source-control tools.
+7. [Run autonomous work safely](./07-overnight.md). Choose an active CLI `/goal`, a Kiro cloud session, or a Web Automation deliberately.
+8. [Steer with principle names](./08-principles.md). Use the 21 names as compact engineering direction.
+9. [Make it yours](./09-make-it-yours.md). Build a project skill or steering rule from explicit evidence.
+10. [Recipes and pitfalls](./10-recipes-and-pitfalls.md). Copy Kiro-native prompts and avoid common failures.
 
-1. [Set up pstack](./01-setup.md). Install the plugin and pick your models.
-2. [Route work through `/poteto-mode`](./02-poteto-mode.md). Give it a goal and watch it pick a playbook.
-3. [Understand the code](./03-understand.md). `/how`, `/why`, `/teach`, and `/recall` before you edit anything.
-4. [Design the change](./04-design.md). `/architect`, `/arena`, `/swarm`, and `/interrogate` before code locks in a shape.
-5. [Build and clean the change](./05-build-and-clean.md). The build playbooks, `/tdd`, `/unslop`, and `/no-comments`.
-6. [Verify and ship](./06-verify-and-ship.md). Prove behavior on the real app, then open a focused PR and drive it to merged.
-7. [Run work while you sleep](./07-overnight.md). An overnight contract, a decision log you can audit, and the playbooks that scale past one agent.
-8. [Steer with principle names](./08-principles.md). The 21 names that redirect an agent mid-task.
-9. [Make it yours](./09-make-it-yours.md). Your own mode, plus how to test a skill change.
-10. [Recipes and pitfalls](./10-recipes-and-pitfalls.md). Prompts to copy and mistakes to skip.
+## The one habit to keep
 
-Read the pages in order the first time. After that, each page stands alone.
-
-## If you only remember one thing
-
-Give the agent a goal and a way to check it, in your own words:
+Give the agent a goal and a checkable finish condition:
 
 ```text
-/poteto-mode the export writes duplicate rows when a retry lands mid-run. repro first, then fix and verify.
+/poteto-mode the export writes duplicate rows when a retry lands mid-run. reproduce it first, then fix it and show the real output.
 ```
 
-You don't need to name a playbook or list skills. "repro first" and a checkable outcome are all the routing signal `/poteto-mode` needs. It matches the Bug fix playbook, copies the steps into a todo list, and calls the right skills as each step fires.
+You do not need to enumerate every skill. A short goal, constraints, and executable checks are stronger than a long ceremony.
 
 Next: [Set up pstack](./01-setup.md).

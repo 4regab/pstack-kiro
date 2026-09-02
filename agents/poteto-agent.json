@@ -1,19 +1,13 @@
 {
   "name": "poteto-agent",
-  "description": "Routing target for `/poteto-mode` and any request for poteto's style. Resume an existing `poteto-agent` for the conversation rather than spawning a sibling. Reads the `poteto-mode` skill's `SKILL.md` in full before any work, including its inline Principles index. Substituting `generalPurpose` skips that read and drifts.",
-  "prompt": "file://./agents/poteto-agent.prompt.md",
-  "is_background": true,
+  "description": "Kiro subagent profile for applying the installed pstack Power and poteto-mode workflow to rigorous engineering tasks.",
+  "prompt": "file://./poteto-agent.prompt.md",
   "tools": [
-    "fs_read",
-    "fs_write",
-    "execute_bash",
-    "grep",
-    "glob",
-    "@kirocrew-core"
+    "read",
+    "write",
+    "shell",
+    "subagent",
+    "todo_list"
   ],
-  "allowedTools": [
-    "fs_read",
-    "grep",
-    "glob"
-  ]
+  "includePowers": true
 }

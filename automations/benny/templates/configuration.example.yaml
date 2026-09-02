@@ -1,32 +1,57 @@
 schema_version: 1
 
-automations:
+workflows:
   triage_name: "benny-triage"
   reproduce_name: "benny-reproduce"
+
+runner:
+  config_path: ".benny/configuration.yaml"
+  triage_prompt_path: ".benny/automations/benny/templates/triage-automation-prompt.md"
+  reproduce_prompt_path: ".benny/automations/benny/templates/reproduce-automation-prompt.md"
+  # Render the matching workflow list into --trust-tools. Never use --trust-all-tools.
+  triage_trusted_tool_categories:
+    - "configured-triage-tool-category"
+  reproduce_trusted_tool_categories:
+    - "configured-repro-tool-category"
+  # Reconcile each list with an isolated effective Kiro MCP configuration before launch.
+  triage_required_mcp_servers:
+    - "configured-triage-mcp-server"
+  reproduce_required_mcp_servers:
+    - "configured-repro-mcp-server"
 
 slack:
   source_channel_id: "SOURCE_CHANNEL_ID"
   operations_channel_id: ""
   triage_identity_user_id: "TRIAGE_IDENTITY_USER_ID"
+  adapter: "configured-slack-adapter"
   read_action: "configured-slack-read-action"
   thread_post_action: "configured-slack-thread-post-action"
   file_download_action: "configured-slack-file-download-action"
+  operations_root_post_action: "configured-slack-operations-root-post-action"
   operations_edit_action: "configured-slack-edit-action"
-  prefer_cursor_actions: true
   optional_bot_token_env: "BENNY_SLACK_BOT_TOKEN"
   allow_source_root_posts: false
   allow_worker_slack_writes: false
 
 repository:
-  url: "https://github.com/example-org/example-repo"
-  default_branch: "main"
-  pull_request_action: "configured-draft-pull-request-action"
-  pull_request_url_format: "https://github.com/{owner}/{repo}/pull/{number}"
+  url: "REPOSITORY_URL"
+  default_branch: "DEFAULT_BRANCH"
+  adapter: "configured-repository-adapter"
+  read_action: "configured-repository-read-action"
+  history_action: "configured-repository-history-action"
+  artifact_search_action: "configured-repository-artifact-search-action"
+  draft_pull_request_action: "configured-draft-pull-request-action"
+  canonical_artifact_url_source: "configured-repository-adapter"
   draft_only: true
 
 tracker:
-  type: "linear"
-  adapter_skill_name: "issue-tracker-adapter-placeholder"
+  type: "TRACKER_TYPE"
+  adapter: "configured-issue-tracker-adapter"
+  search_action: "configured-tracker-search-action"
+  read_action: "configured-tracker-read-action"
+  create_action: "configured-tracker-create-action"
+  update_action: "configured-tracker-update-action"
+  compensation_action: "configured-tracker-compensation-action"
   team: "team-placeholder"
   project: "project-placeholder"
   labels:
@@ -39,23 +64,32 @@ tracker:
   require_compensation_action: true
 
 routing:
-  map_path: ".cursor/benny/routing.md"
+  map_path: ".benny/routing.md"
   owner_pings_default: false
   allow_feature_owner_ping: false
   allow_confirmed_regression_author_ping: false
 
 control:
-  skill_name: "control-target-app"
-  feature_map_path: ".cursor/benny/feature-map.md"
+  adapter: "configured-control-adapter"
+  capability_action: "configured-control-capability-action"
+  bring_up_action: "configured-control-bring-up-action"
+  drive_action: "configured-control-drive-action"
+  inspect_action: "configured-control-inspect-action"
+  screenshot_action: "configured-control-screenshot-action"
+  recording_start_action: "configured-control-recording-start-action"
+  recording_stop_action: "configured-control-recording-stop-action"
+  reset_action: "configured-control-reset-action"
+  cleanup_action: "configured-control-cleanup-action"
+  feature_map_path: ".benny/feature-map.md"
   environment: "safe-test-environment-placeholder"
   artifact_directory: "/tmp/benny-artifacts"
   artifact_retention_hours: 24
 
+# Fixed protocol values. Validation must reject changed or duplicate markers.
 verdict_markers:
   bug: "[benny:bug]"
   performance: "[benny:performance]"
   other: "[benny:other]"
-  tracker_attribute: "tracker"
 
 status_emoji:
   seen: "👀"
@@ -76,9 +110,3 @@ budgets:
   rejection_window_minutes: 10
   fix_minutes: 90
   operations_follow_up_minutes: 45
-
-models:
-  triage: "choose-an-available-public-model-slug"
-  reproduce: "choose-an-available-public-model-slug"
-  code: "choose-an-available-public-model-slug"
-  media_review: "choose-an-available-public-model-slug"

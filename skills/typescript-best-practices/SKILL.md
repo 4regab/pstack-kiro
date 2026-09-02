@@ -1,10 +1,7 @@
 ---
 name: typescript-best-practices
 description: TypeScript best practices. Use when reading or editing any .ts or .tsx file.
-triggers: typescript-best-practices, typescript best practices
 ---
-
-> Ported from cursor/pstack.
 
 
 # TypeScript best practices

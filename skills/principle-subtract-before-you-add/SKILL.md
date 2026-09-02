@@ -1,10 +1,7 @@
 ---
 name: principle-subtract-before-you-add
 description: "Apply when sequencing an addition, refactor, or rewrite. Remove dead weight, redundant validators, and stub references first, then build on the simpler base."
-always: false
 ---
-
-> Ported from cursor/pstack. Manual invocation only (invoke `/principle-subtract-before-you-add`).
 
 
 # Subtract Before You Add

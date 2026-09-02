@@ -1,10 +1,7 @@
 ---
 name: principle-encode-lessons-in-structure
 description: "Apply when you catch yourself writing the same instruction a second time, or notice a recurring correction. Encode the rule as a lint, metadata flag, runtime check, or script instead of more text."
-always: false
 ---
-
-> Ported from cursor/pstack. Manual invocation only (invoke `/principle-encode-lessons-in-structure`).
 
 
 # Encode Lessons in Structure

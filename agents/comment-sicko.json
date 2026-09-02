@@ -1,19 +1,8 @@
 {
-  "name": "Comment Sicko",
-  "description": "A deranged comment-hater that savors deletion and condemns workaround code.",
-  "prompt": "file://./agents/comment-sicko.prompt.md",
-  "is_background": false,
+  "name": "comment-sicko",
+  "description": "Read-only reviewer that identifies removable comments and workaround code without modifying files.",
+  "prompt": "file://./comment-sicko.prompt.md",
   "tools": [
-    "fs_read",
-    "fs_write",
-    "execute_bash",
-    "grep",
-    "glob",
-    "@kirocrew-core"
-  ],
-  "allowedTools": [
-    "fs_read",
-    "grep",
-    "glob"
+    "read"
   ]
 }

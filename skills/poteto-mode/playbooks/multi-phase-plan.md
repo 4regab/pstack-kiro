@@ -3,16 +3,16 @@
 **You own the plan, not the code. The plan is a checklist an owner runs box by box and the operator audits from the evidence.** For work that spans phases or stacked PRs. The plan is the deliverable. Do not implement.
 
 1. When the change is one or two files with an obvious approach, skip the plan. Say so and stop.
-2. Settle open questions by prototype before you write. For a question about layout, timing, behavior, or whether an API works, run `playbooks/prototype.md`. Keep the branch, the SHA, and the screenshots for Appendix A. Ask the operator only about a product or preference call that no run can settle. Give options (the **never-block-on-the-human** principle skill).
-3. Explore in subagents with `subagent_type: "poteto-agent"` and an explicit model per the Subagents section (the **guard-the-context-window** principle skill). Each returns file pointers, conventions, test commands, and entry points. No inlined dumps.
-4. Copy the skeleton below into the plan file and fill every placeholder. Unless the operator names a path, write the file under the agent store's `docs/`. Keep every heading and every sub-block in the order shown. One section per PR. One PR is one change with its own evidence (the **sequence-verifiable-units** principle skill). Name the execution playbook in **How to read this**. Pick between `playbooks/autopilot-full.md` and `playbooks/autopilot-stack.md` per the rule at the end of `playbooks/autopilot-stack.md`. A standing program takes `playbooks/orchestrate.md`.
-5. Write under `/technical-writing` in full, then `/unslop`. The body is one Diátaxis mode, how-to. Appendices hold explanation and reference. Two rules apply verbatim. "i dont want any abstract metaphors" and "write like hemingway". Each heading states the task or the finding. No long dashes. No mid-sentence colons.
-6. Run `node pstack/skills/poteto-mode/scripts/check-plan.mjs <plan.md>` and fix every line it prints (the **encode-lessons-in-structure** principle skill). It enforces the skeleton's shape, the verification rule in every verification block, and the punctuation rules.
+2. Settle open questions by prototype before you write. For a question about layout, timing, behavior, or whether an API works, run `./prototype.md`. Keep the branch, SHA, and artifacts for Appendix A. Ask the operator only about a product or preference call that no run can settle. Give options (the **never-block-on-the-human** principle skill).
+3. Explore with Kiro's subagent capability (the **guard-the-context-window** principle skill). Prefer the named `poteto-agent` when configured; otherwise use suitable named agents or native subagents. Define independent scopes, fan them out, and fan their reports back into one plan. Each uses its configured or selected/default model and returns file pointers, conventions, test commands, and entry points. No inlined dumps.
+4. Copy the skeleton below into the plan file and fill every placeholder. Unless the operator names a path, write the file under the repository's documented planning or decision-log directory. Keep every heading and sub-block in order. One section per PR. One PR is one change with its own evidence (the **sequence-verifiable-units** principle skill). Name the execution playbook in **How to read this**. Pick between `./autopilot-full.md` and `./autopilot-stack.md` per the rule at the end of `./autopilot-stack.md`. A standing program takes `./orchestrate.md`.
+5. Apply the available technical-writing and prose-review skills, or their standards directly. The body is one Diátaxis mode, how-to. Appendices hold explanation and reference. Two rules apply verbatim. "i dont want any abstract metaphors" and "write like hemingway". Each heading states the task or finding. No long dashes. No mid-sentence colons.
+6. Run `bun <poteto-mode-dir>/scripts/check-plan.mjs <plan.md>` and fix every line it prints (the **encode-lessons-in-structure** principle skill). Resolve `<poteto-mode-dir>` from the installed skill location. The script enforces the skeleton's shape, verification rule, and punctuation rules.
 7. Hand back. Post the plan path and the script's output, then stop. Execution starts on the operator's explicit go, under the execution playbook the plan names.
 
-**Verification.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked (the **prove-it-works** principle skill). That sentence is the verification rule. Every verification block opens with it. The live block is mandatory. Ten lanes on `grok-4.6-fast-xhigh` at the PR head drive the real surface through its control skill, per the **swarm** skill. Each lane is one box with a concrete scenario, the screenshot it saves, and its pass predicate. The perf block names the metric, the probe, the trunk baseline measured first, and the rule with the number that fails. A PR that changes an interaction is review-gated. The operator reviews it in chat with screenshots and a video before merge. A PR that changes no interaction writes `**Review gate.** None. <PR id> is not review-gated.` and no boxes under it.
+**Verification.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked (the **prove-it-works** principle skill). That sentence is the verification rule. Every verification block opens with it. The live block is mandatory. Size the fan-out to risk and available capacity; ten lanes are a ceiling, not a default. Each lane runs at the PR head with its configured or selected/default model, drives the real surface using available Kiro UI/CLI, project, shell, screenshot, simulator, or MCP tools, and returns a concrete scenario, artifact, and pass predicate. The perf block names the metric, probe, trunk baseline measured first, and numeric failure rule. A PR that changes an interaction is review-gated. The operator reviews artifacts before merge. A PR that changes no interaction writes `**Review gate.** None. <PR id> is not review-gated.` and no boxes under it.
 
-**Control skill.** Pick it by surface. Browser, Electron, and web UIs use `control-ui` from `cursor-team-kit`. CLIs and TUIs use `control-cli` from `cursor-team-kit`. Native mobile uses whatever simulator-driving skill the repo has. A PR that touches two surfaces gets lanes on both. A surface with no control skill is a risk in Appendix C, and its live block still names how each lane drives it.
+**Verification tools.** Pick tools that exist on the active surface. Browser and desktop work use project-native tests, available screenshots, dev-server output, diagnostics, or an installed browser/MCP integration. CLIs and TUIs use shell execution, terminal output, and project tests. Native mobile uses available simulator tooling. A PR that touches two surfaces gets evidence from both. Missing tooling is a risk in Appendix C, never a reason to invent a capability.
 
 ````markdown
 # <Program> plan
@@ -23,7 +23,7 @@
 
 One box is one unit of work. Every box names the evidence that checks it. A nested box is a sub-step of the box above it. Check a box only when its evidence exists, a file, a log line, a screenshot, a test run, or a SHA. The body is a how-to. The appendices explain and record.
 
-The program runs `pstack/skills/poteto-mode/playbooks/<execution playbook>.md`. <Who merges, and which PR ids are the operator's items that stop at merge-ready.>
+The program runs `<poteto-mode-dir>/playbooks/<execution playbook>.md`. Resolve `<poteto-mode-dir>` from the installed skill location. <Who merges, and which PR ids are the operator's items that stop at merge-ready.>
 
 Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
@@ -32,20 +32,18 @@ Tests alone are not sufficient verification. A PR is verified only when its unit
 ### Arm the program
 
 - [ ] State the protocol and this plan to the operator, then stop. Start execution only on her explicit go.
-- [ ] On her go, arm a `/goal` with this exact text. "<The plan path, the PR ids in order, the verification rule, who merges, and the done condition.>"
-- [ ] Read these from trunk at program start. Re-read them at every tick.
-  - [ ] `git show origin/main:pstack/skills/poteto-mode/playbooks/<execution playbook>.md`
-  - [ ] `git show origin/main:pstack/skills/swarm/SKILL.md`
-  - [ ] `git show origin/main:<control skill path>`
-  - [ ] `git show origin/main:pstack/skills/poteto-mode/playbooks/opening-a-pr.md`
-  - [ ] `git show origin/main:pstack/skills/<each other leaf skill the program uses>`
-- [ ] Arm the 30-minute audit tick. In a local session, a real terminal `/loop`. In a cloud root, a cloud-sleeper wake chain. Never leave the cadence to memory.
-- [ ] Use this tick prompt, verbatim. "Re-read the execution playbook from trunk and the armed /goal. Audit the operation against both and fix drift in this tick. Probe every active lane and judge progress by side effects only. Stand down a stuck lane and dispatch its replacement now. Then send the operator a status message, whether or not anything changed, with the queue table of PR, owner, state, and head SHA, the verdicts since the last tick, what merged, open operator gates, and blockers."
+- [ ] On her go, record the program objective, plan path, PR ids, verification rule, merge owner, finite checkpoint cadence, and done condition in the repository decision log. In Kiro CLI only, `/goal --max <finite-count> <objective>` may drive the current bounded cycle.
+- [ ] Read the execution playbook and repository steering from the current branch at program start. Re-read them at each bounded checkpoint.
+  - [ ] `<poteto-mode-dir>/playbooks/<execution playbook>.md`
+  - [ ] `<poteto-mode-dir>/playbooks/opening-a-pr.md`
+  - [ ] `<each optional named skill or custom-agent definition the program uses>`
+- [ ] Choose the execution surface. Use the attached IDE or CLI session for supervised work. Use a Kiro cloud session for detached cross-surface continuation. A local session that closes does not wake itself.
+- [ ] At each checkpoint, audit the decision log, active branches, PRs, checks, and verifier reports. Fix drift, replace timeboxed workers from their stored briefs, and send the operator the queue table of PR, owner, state, head SHA, verdicts, merges, gates, and blockers.
 - [ ] On the operator's hold or stand-down, send every owner a zero-writes order at once.
 
 ### Spawn owners
 
-- [ ] Spawn one owner per PR with the full lifecycle the execution playbook names.
+- [ ] Assign one owner per PR through Kiro's subagent capability, or a Kiro cloud session when detached cross-surface work is required. Every owner receives an exclusive branch or worktree, a finite timebox, and the full lifecycle named by the execution playbook.
 - [ ] Follow this dependency graph. Start dependent work only after its parent merges, or base it on the parent branch when the execution playbook stacks.
   - [ ] <PR id> and <PR id> are independent and first. Both branch from `main`.
   - [ ] <PR id> after <PR id>.
@@ -54,28 +52,28 @@ Tests alone are not sufficient verification. A PR is verified only when its unit
 
 ### PR mechanics, for every PR
 
-- [ ] Open the PR ready, never draft, with `gh pr create` and `draft: false`, or with Graphite `gt` for a stack.
+- [ ] Open the PR ready, never draft, with `gh pr create --draft=false` or the repository's supported equivalent. When the repository already uses Graphite, `gt` may create a stack; otherwise use ordinary git branches and `gh` PRs.
 - [ ] Run the repo's lint and typecheck once before the PR-facing push. Push with hooks on.
-- [ ] Run `/deslop` before each commit and `/no-comments` before review.
-- [ ] Triage every Bugbot and security-reviewer comment per `../references/bugbot-triage.md`.
-- [ ] Rebase onto current trunk before babysit and again before the merge-ready report.
+- [ ] Review the diff for vague prose, unrelated changes, accidental complexity, and narrating comments before commit and review.
+- [ ] Triage every automated review and security-review comment per `<poteto-mode-dir>/references/bugbot-triage.md`.
+- [ ] Update from current trunk before babysit and again before the merge-ready report, using the repository's established safe workflow.
 
 ### Verdict and merge, for every PR
 
-- [ ] At the merge-ready head SHA, run the swarm per `pstack/skills/swarm/SKILL.md`. One gates lane. The ten live lanes from the PR's **Verify, live** block. The perf lane from its **Verify, perf** block. One audit lane that reads the diff and the receipts and distrusts the PR body.
-- [ ] Clean only when every lane is `PASS`. Findings go back to the owner. A new head gets a fresh swarm and a fresh verdict.
-- [ ] <The merge or append rule from the execution playbook, with the patch-id rule from `playbooks/shipping.md`.>
+- [ ] At the merge-ready head SHA, fan out independent verifier subagents. Include one gates lane, the live lanes from the PR's **Verify, live** block, the perf lane from **Verify, perf**, and one audit lane that distrusts the PR body. Size the fan-out to risk and available capacity.
+- [ ] Clean only when every lane is `PASS`. Findings go back to the owner. A new head gets fresh evidence and a fresh verdict.
+- [ ] <The merge or append rule from the execution playbook, with the patch-id rule from `<poteto-mode-dir>/playbooks/shipping.md`>.
 
 ### Boot recipe, for every live lane
 
-Each live lane runs on its own cloud VM at the PR head. Drive through `control-ui` or `control-cli` from `cursor-team-kit`.
+Each live lane runs at the PR head in an isolated worktree, subagent, or Kiro cloud session. Drive the surface through the project and Kiro verification tools actually available.
 
-- [ ] `git fetch origin <head-branch> && git checkout <head SHA>`.
-- [ ] <Start the backend and the surface. Wait for ready.>
-- [ ] <Deliver input only through the control skill's commands. Name the read-only diagnostics.>
-- [ ] Save every screenshot to `/tmp/swarm-<pr-id>/worker-<n>/<slug>.png` and return the paths with the report.
+- [ ] `git fetch origin <head-branch> && git checkout <head SHA>` in the lane's isolated checkout.
+- [ ] <Start the backend and surface. Wait for ready.>
+- [ ] <Deliver input through available UI, CLI, test, shell, simulator, screenshot, or MCP tools. Name the read-only diagnostics.>
+- [ ] Save evidence under a repository-approved artifact path or an explicitly reported temporary path and return those paths with the report.
 
-## <Task as a verb phrase> (<PR id>)
+## <Change as a verb phrase> (<PR id>)
 
 **Depends on.** <PR id, or None.>
 
@@ -97,7 +95,7 @@ Each live lane runs on its own cloud VM at the PR head. Drive through `control-u
 
 - [ ] <Test file and the case it gains.> Run `<command>`.
 
-**Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `grok-4.6-fast-xhigh` at the PR head, per the boot recipe.
+**Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Use enough independent lanes to cover the risk, up to the plan's stated ceiling, at the exact PR head.
 
 - [ ] Lane 1. <Scenario.> Save `<slug>.png`. Pass when <predicate>.
 - [ ] Lane 2. <Scenario.> Save `<slug>.png`. Pass when <predicate>.
@@ -149,7 +147,7 @@ Each live lane runs on its own cloud VM at the PR head. Drive through `control-u
 
 ## Appendix D. Links and reading list
 
-<Docs to read before editing. Which PRs get `pstack/skills/how/SKILL.md` and `pstack/skills/interrogate/SKILL.md`. The trail per `pstack/skills/show-me-your-work/SKILL.md`.>
+<Docs to read before editing. Which PRs use optional design or adversarial-review skills or named agents. The repository decision-log path and durable branch handoff.>
 ````
 
 **Reply:** the plan path, the PR ids with their dependencies and the review-gated set, what the prototypes proved and what stays unproven, and the check script's output.

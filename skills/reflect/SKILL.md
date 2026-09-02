@@ -1,10 +1,7 @@
 ---
 name: reflect
-description: Spawn three parallel review subagents over the active transcript, surface learnings, and route each to a concrete edit on an existing skill. Use when the user says reflect.
-always: false
+description: Review an exported transcript or the current conversation with three independent lenses, surface durable learnings, and route approved findings to concrete Agent Skill edits. Use when the user says reflect.
 ---
-
-> Ported from cursor/pstack. Manual invocation only (invoke `/reflect`).
 
 
 # Reflect
@@ -23,33 +20,27 @@ Skip when the conversation is trivial, off-topic, or already covered by an exist
 
 ## Process
 
-### 1. Locate the active transcript
+### 1. Gather the active conversation
 
-The parent finds its own transcript file before fanning out. The system prompt names the active workspace's `agent-transcripts/` directory; use that path. Do not glob across `~/.cursor/projects/*/`. That crosses workspace boundaries and reads private chats from unrelated projects.
+Use an exported transcript when the current surface provides one, or a transcript path explicitly supplied by the user. Never probe private Kiro storage or infer an internal transcript layout. Confirm that a user-provided file belongs to the intended workspace before reading it.
 
-```bash
-ls -t <agent-transcripts>/*.jsonl <agent-transcripts>/*/*.jsonl <agent-transcripts>/*/subagents/*.jsonl 2>/dev/null | head -10
-```
-
-Three transcript layouts: legacy flat (`<id>.jsonl`), current nested (`<id>/<id>.jsonl`), and subagent (`<parent>/subagents/<child>.jsonl`).
-
-For each candidate, read the first JSONL line and check that `message.content[0].text` contains the conversation's opening user prompt. Take the matching path. If no path resolves, write a tight digest of the session and pass that instead.
+If no exported transcript or explicit path is available, write a tight digest from the current conversation context. Include the user's goal, corrections, decisions, tools used, evidence, and unresolved work. Pass that digest to reviewers; do not claim it is a complete transcript.
 
 ### 2. Spawn three reviewers in parallel
 
-One message, three `Task` calls, `subagent_type: generalPurpose`, explicit `model:` on each, agent mode (`readonly: false`). Reviewers need MCP access for context lookups (tickets, chat threads, observability traces referenced in the transcript); readonly strips MCPs. The prompt forbids file writes; the parent applies edits.
+Invoke three named Kiro reviewer subagents concurrently through the subagent capability. Use the judgment, tooling, and divergent roles when those named agents exist; otherwise invoke the default subagent three times with the distinct templates below. Omit per-call model settings. Prompts forbid file writes; the parent applies edits. MCP availability comes from each agent's configuration, so a reviewer must report a referenced source as unavailable rather than assume access.
 
-| Lens | `model` | Prompt template |
-|---|---|---|
-| Judgment | your configured reflect-judgment model (default `claude-fable-5-thinking-max`) | `references/judgment-reviewer.md` |
-| Tooling | your configured reflect-tooling model (default `gpt-5.6-sol-max`) | `references/tooling-reviewer.md` |
-| Divergent | your configured reflect-judgment model (default `claude-fable-5-thinking-max`) | `references/divergent-reviewer.md` |
+| Lens | Prompt template |
+|---|---|
+| Judgment | `references/judgment-reviewer.md` |
+| Tooling | `references/tooling-reviewer.md` |
+| Divergent | `references/divergent-reviewer.md` |
 
-Pass each template verbatim, substituting the transcript path or digest where marked. Reviewers return findings in the `Task` response body.
+Pass each template verbatim, substituting the exported transcript path or current-context digest where marked. Reviewers return findings through the subagent capability.
 
 ### 3. Synthesize
 
-One `Task` call, `subagent_type: generalPurpose`, using your configured reflect-judgment model (default `claude-fable-5-thinking-max`), agent mode (`readonly: false`). The synthesizer's quality check includes spot-verifying citations, which can require MCP access; readonly strips MCPs. Use `references/synthesizer.md` verbatim, with each reviewer's full output inlined where marked. The synthesizer returns a structured Accepted / Rejected / Backlog list.
+Invoke one named Kiro synthesizer through the subagent capability, or use the default subagent if none exists. Omit per-call model settings. Use `references/synthesizer.md` verbatim, with each reviewer's full output inlined where marked. The synthesizer may spot-check cited sources available through its configured tools and must mark unavailable sources instead of guessing. It returns a structured Accepted / Rejected / Backlog list.
 
 ### 4. Structural enforcement check
 
@@ -64,9 +55,9 @@ Backlog items file to whatever devex / backlog tracker your team uses automatica
 For each approved Accepted item, follow the Routing field exactly:
 
 - Trivial existing-skill edit (a one-line bullet, a tightened sentence, a stale fact corrected): parent does directly.
-- Substantive existing-skill edit (a new section, a new pattern table, more than ~10 lines): hand to Cursor's built-in `create-skill` skill and run its draft / test / iterate loop.
-- `tune description: <skill path>` (the skill exists but didn't trigger when it should have): hand to `create-skill` and run its description-optimization loop.
-- `new skill via create-skill: <kebab-name>`: hand creation to `create-skill`. Do not invent the shape ad hoc.
+- Substantive existing-skill edit (a new section, a new pattern table, more than ~10 lines): use an installed Kiro skill-authoring capability when available; otherwise edit the existing `SKILL.md` minimally, preserving its frontmatter and structure, then validate it.
+- `tune description: <skill path>` (the skill exists but didn't trigger when it should have): optimize the existing Agent Skills `description` and verify it remains a single useful field.
+- `new skill: <kebab-name>`: create `.kiro/skills/<kebab-name>/SKILL.md` with only `name` and `description` frontmatter plus the minimum instructions. If the desired location or behavior is ambiguous, require explicit user input instead of inventing it.
 
 If your environment ships a SKILL.md validator, run it on every touched skill before declaring done. Skip this step if it doesn't.
 

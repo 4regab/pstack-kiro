@@ -1,12 +1,12 @@
 # Control-adapter contract
 
-Benny does not know how to start or drive every app. The user must configure one control skill or adapter that implements this contract for the target app.
+Benny does not know how to start or drive every app. The user must configure one control adapter that implements this contract for the target app.
 
-Set its skill name in `control.skill_name`.
+Set its configured identifier in `control.adapter`. Adapter, MCP server, and action names are deployment inputs; do not infer or invent them.
 
-Set the completed user-facing feature map path in `control.feature_map_path`. Copy and fill [`feature-map.example.md`](./feature-map.example.md) outside `.cursor/automations/benny/` instead of editing the copied example.
+Set the completed user-facing feature map path in `control.feature_map_path`. Copy and fill [`feature-map.example.md`](./feature-map.example.md) outside `.benny/automations/benny/` instead of editing the copied example.
 
-If the skill, feature map, or a required capability is absent, ambiguous, or incomplete, repro and fix work must fail closed.
+If the adapter, feature map, or a required capability is absent, ambiguous, or incomplete, repro and fix work must fail closed.
 
 ## Required capabilities
 
@@ -154,7 +154,7 @@ Hardware prompts, operating-system permission dialogs, device-only APIs, and una
 
 ## Setup check
 
-Before enabling the repro automation, run one harmless adapter check:
+Before enabling externally launched repro work, run one harmless adapter check:
 
 1. Bring up the app.
 2. Confirm the stable app marker.

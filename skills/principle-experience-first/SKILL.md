@@ -1,10 +1,7 @@
 ---
 name: principle-experience-first
 description: "Apply when product, UX, or feature-scope tradeoffs come up. Choose user delight over implementation convenience; ship fewer polished features over more rough ones."
-always: false
 ---
-
-> Ported from cursor/pstack. Manual invocation only (invoke `/principle-experience-first`).
 
 
 # Experience First

@@ -1,8 +1,8 @@
 # Routing map example
 
-Copy this file outside `.cursor/automations/benny/`, for example to `.cursor/benny/routing.md`, and replace every placeholder. Point `routing.map_path` at the copy. Pack refreshes must not overwrite it.
+Copy this file outside `.benny/automations/benny/`, for example to `.benny/routing.md`, and replace every placeholder. Point `routing.map_path` at the copy. Pack refreshes must not overwrite it.
 
-The triage skill treats this as data. A route needs evidence from the report or cause trace. A keyword match alone is not enough.
+The triage runbook treats this as data. A route needs evidence from the report or cause trace. A keyword match alone is not enough.
 
 ```yaml
 routes:

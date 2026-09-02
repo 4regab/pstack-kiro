@@ -27,7 +27,7 @@ Record:
 - Pull request or commit URL
 - Build and environment inputs shared by both runs
 
-Use regular `github.com` pull request links.
+Use the configured repository adapter's canonical pull request or commit URL.
 
 ## Measure the baseline
 

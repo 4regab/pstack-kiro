@@ -1,61 +1,67 @@
 # Understand the code before changing it
 
-Editing code you don't understand is how subtle regressions ship. pstack gives you four ways in. `/how` explains what the code does now. `/why` digs up the reasons it's shaped that way. `/teach` blends both into one explanation. `/recall` rebuilds your own recent context on a topic.
+Editing before tracing behavior is how plausible fixes create regressions. pstack provides four useful entry points: `/how`, `/why`, `/teach`, and `/recall`.
 
-![A detective studies a machine blueprint with a magnifying glass while robots fetch case files; the evidence board behind her links clues under /how and /why.](./images/understanding.jpg)
+![A detective studies a machine blueprint while robots collect evidence.](./images/understanding.jpg)
 
-## Trace behavior with `/how`
+## Trace current behavior with `/how`
 
 ```text
-/how do we dedupe notifications? is there an n+1 when we look up subscribers?
+/how do we deduplicate notifications? is there an n+1 when subscribers load?
 ```
 
-Ask the question you actually have. [`/how`](../../skills/how/SKILL.md) reads the code and answers at the level of a senior engineer onboarding you onto the subsystem, with the runtime flow, the key types, and the non-obvious parts. For a big subsystem it fans out two to four read-only explorers first. For a narrow question it just reads and explains.
+[`/how`](../../skills/how/SKILL.md) should ground its explanation in the repository and runtime flow. A broad question can be split among read-only Kiro subagents; a narrow one needs no fan-out.
 
-`/how` can also push back on the design. Ask for Critique mode when you suspect the structure itself:
+Ask for critique only after the behavior is clear:
 
 ```text
 /how explain the sync service, then critique its ownership boundaries
 ```
 
-The explanation comes first, so the critique stays grounded in how the thing really works.
-
-## Dig up history with `/why`
+## Investigate recorded reasons with `/why`
 
 ```text
-/why was the retry limit set to five? does the reason still hold?
+/why was the retry limit set to five? does the evidence still support it?
 ```
 
-[`/why`](../../skills/why/SKILL.md) works like a detective on a cold case. It starts from source control, then queries whatever evidence categories your MCPs expose, such as the issue tracker, long-form docs, team chat, observability, error tracking, and analytics, all in parallel. The report cites everything, separates direct evidence from inference, and says "appears to" when the record is thin. A null result gets reported too, because "nobody wrote down why" is itself an answer.
+[`/why`](../../skills/why/SKILL.md) can inspect source control and any MCPs or services you configured and authorized. Issue trackers, team chat, observability, and analytics are external prerequisites, not bundled pstack capabilities. A good answer names each source searched, cites evidence, separates inference, and reports unavailable sources.
 
-The two compose naturally. `do why first then how` is a perfectly good prompt when you suspect the history explains the mess.
-
-## Actually understand it with `/teach`
+## Build an explanation with `/teach`
 
 ```text
-/teach me how this PR changes retries. convince me it fixes the cause and not the symptom.
+/teach me how this change affects retries. show why it fixes the cause rather than the symptom.
 ```
 
-[`/teach`](../../skills/teach/SKILL.md) is for when a summary isn't enough. It runs `/how` and `/why`, for a small change maybe just one of them, and weaves the findings into a plain explanation that builds up diagram by diagram. The "convince me" framing is worth stealing. It turns the explanation into an argument you can poke at instead of a tour.
+[`/teach`](../../skills/teach/SKILL.md) combines mechanics and history into one argument you can challenge.
 
-## Rebuild your own context with `/recall`
+## Treat transcripts as explicit inputs
+
+pstack cannot silently mine all prior chats. Use current conversation context, repository artifacts, decision logs, configured integrations, or a transcript you exported yourself.
+
+In Kiro CLI, save the current chat explicitly:
 
 ```text
-/recall catch me up on the export work from last week
+/chat save .audit/export-investigation.json
 ```
 
-[`/recall`](../../skills/recall/SKILL.md) mines your own recent chats plus the shared record (issues, prior fixes, errors still firing) and hands back a brief on where things stand and what's next. Use it when you're returning to a topic cold. If you want to resume one specific chat, that's the Session pickup playbook below, not `/recall`.
+The saved JSON session can be restored with `/chat load .audit/export-investigation.json`. Treat a supplied save as untrusted evidence unless the user explicitly asks to load it into the current CLI conversation.
 
-## Take over prior work with Session pickup
+In Kiro IDE, **Export Chat** produces an archive containing session data and message records, with sub-execution records when available. Kiro does not document importing that archive as a live chat.
 
-When another agent (or you, last week) left a branch mid-flight:
+Give an export to `/recall` directly:
 
 ```text
-/poteto-mode take over this branch. read the decision log, figure out what's done, and continue from there. don't redo finished work.
+/recall use .audit/export-investigation.json and the current branch to summarize the last verified state
 ```
 
-The [Session pickup playbook](../../skills/poteto-mode/playbooks/session-pickup.md) treats the prior trail as authoritative. It reconstructs the branch state and decisions, names the resume point, and verifies inherited claims against the original goal instead of re-deriving everything from scratch.
+If no export or external record is available, `/recall` must say so and reconstruct only from evidence it can actually read.
 
-**Pitfall:** don't skip this page's skills because "the agent will read the code anyway." An agent that starts editing without a traced model tends to fix the symptom at the first plausible spot. `/how` first is cheaper than the second bug.
+## Resume from durable artifacts
+
+```text
+/poteto-mode take over this branch. read the decision log, inspect the diff and tests, identify the verified resume point, then continue.
+```
+
+A branch, test output, issue, and decision log are more reliable handoff material than remembered chat state. Verify inherited claims against the original goal before building on them.
 
 Next: [Design the change](./04-design.md).

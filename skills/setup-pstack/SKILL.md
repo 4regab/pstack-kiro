@@ -1,69 +1,49 @@
 ---
 name: setup-pstack
-description: Configure which models pstack uses per role. Detects your available models and writes an always-applied rule that overrides the skill defaults. Use for /setup-pstack, "configure pstack models", or changing pstack's model choices.
-triggers: setup-pstack, setup pstack
+description: Configure model selection for pstack on Kiro IDE or CLI without a separate model registry. Use for setup-pstack, configuring pstack models, or pinning a named custom agent to an available model.
 ---
-
-> Ported from cursor/pstack.
-
 
 # Setup pstack
 
-Write `~/.cursor/rules/pstack-models.mdc`, an always-applied rule that sets pstack's model per role. The skills read it and fall back to their inline defaults when a line is absent, so this is an override layer, not a requirement.
+Use Kiro's model selection instead of maintaining a pstack-specific role-to-model map. Skills and ordinary subagent calls omit model identifiers and use the selected or default Kiro model. Only a named custom agent may be pinned, through that agent's supported `model` field, when the user explicitly requests it.
 
 ## Steps
 
-### 1. Detect available models
+### 1. Choose the scope
 
-Enumerate the model slugs you can pass to a `Task` subagent in this session; that is the dependable source. If Cursor also exposes a models API or CLI that lists the user's entitled models, prefer it for completeness. If you cannot detect any, ask the user to paste the slugs they have access to. Never write a real slug you have not confirmed is available. The aliases `inherit-parent` and `auto` are always valid even though they are not detected slugs.
+Ask one concise question if the request is ambiguous:
 
-### 2. Load current state
+- **Conversation model:** change the model used for subsequent chat work.
+- **Default behavior:** keep pstack model-neutral and use Kiro's selected or default model.
+- **Named custom agent:** pin one existing custom agent to a model.
 
-The default role-to-model mapping is the rule shape shown in step 5 below. If `~/.cursor/rules/pstack-models.mdc` already exists, read it and treat its values as the current choices. Otherwise start from those defaults.
+Do not create a role registry, model aliases, or steering rules. Kiro does not expose a portable per-call model override for subagents.
 
-### 3. Map and confirm
+### 2. Select a conversation model
 
-Show every role with its current model, marking any real slug not in the detected set as needing a choice. Ask whether to accept as-is or change specific roles, offering the detected models plus `inherit-parent` and `auto` (both mean: this role runs on the parent chat model, which is how Auto users stay on Auto) as the options. Prefer AskQuestion over free text. For panel roles (how critics, arena runners, architect runners, interrogate reviewers) the value is a list, and one subagent runs per entry, alias entries included, so the list length sets the count. `arena cross-judge pool` is also a list, but Arena selects one value from it whose model family differs from the parent's when possible. `swarm workers` is the default model for every worker unless a race or comparison assigns another model per arm.
+In Kiro IDE, tell the user to choose a model with the chat model selector. The selection applies to subsequent messages in that conversation.
 
-### 4. Validate
+In Kiro CLI, list the models available to the user's account:
 
-Every real slug written must be in the detected set; `inherit-parent` and `auto` always pass. If a chosen real slug is not available, stop and ask again. A rule pointing at a model the user cannot use breaks every delegation that reads it.
-
-### 5. Write the rule
-
-Write `~/.cursor/rules/pstack-models.mdc` with `alwaysApply: true` and one line per role, using the same labels poteto-mode uses. Overwrite the whole file so re-runs stay idempotent. Shape:
-
-```
----
-description: pstack per-role model choices (overrides skill defaults)
-alwaysApply: true
----
-# pstack model configuration. One line per role. Delete a line to fall back to the skill default.
-# `inherit-parent` or `auto` as a value: the role runs on the parent chat model (omit Task `model`). Alias entries in a panel list still count toward its fan-out.
-feature, refactoring: grok-4.6-fast-xhigh
-bug-fix: gpt-5.6-sol-max
-perf-issue: gpt-5.6-sol-max
-hillclimb: gpt-5.6-sol-max
-judgment and prose: claude-fable-5-thinking-max
-hardest tasks: claude-fable-5-thinking-max
-how explorer: grok-4.6-fast-xhigh
-how explainer: claude-fable-5-thinking-max
-how critics: claude-fable-5-thinking-max, gpt-5.6-sol-max, grok-4.6-fast-xhigh, claude-opus-5-thinking-xhigh
-why investigators: grok-4.6-fast-xhigh
-why synthesizer: claude-fable-5-thinking-max
-reflect tooling: gpt-5.6-sol-max
-reflect judgment, divergent, synthesizer: claude-fable-5-thinking-max
-arena runners: claude-fable-5-thinking-max, gpt-5.6-sol-max, grok-4.6-fast-xhigh, claude-opus-5-thinking-xhigh
-arena cross-judge pool: claude-fable-5-thinking-max, gpt-5.6-sol-max, grok-4.6-fast-xhigh, claude-opus-5-thinking-xhigh
-swarm workers: grok-4.6-fast-xhigh
-architect runners: claude-fable-5-thinking-max, gpt-5.6-sol-max, grok-4.6-fast-xhigh, claude-opus-5-thinking-xhigh
-interrogate reviewers: claude-fable-5-thinking-max, gpt-5.6-sol-max, grok-4.6-fast-xhigh, claude-opus-5-thinking-xhigh
+```bash
+kiro-cli chat --list-models --format json
 ```
 
-### 6. Confirm
+Present the returned choices. In an interactive CLI session, select the confirmed ID with `/model <model-id>`. If the current surface cannot change the active model directly, give the user the exact available model ID and require them to select it in Kiro rather than inventing an unsupported configuration path.
 
-Tell the user the rule was written and that it applies to new sessions. Re-running this skill updates it.
+### 3. Pin a named custom agent only when requested
 
-### 7. Offer a verification skill (optional)
+Require the existing custom agent's name or user-provided configuration path. If neither is available, ask for it; do not guess which agent to edit.
 
-Check whether the project has a way to drive the real app for proof (a `verify-*` skill, or an existing harness). If not, offer once: "want a project-local verification skill, so agents can drive the app the way a user does and prove changes work? I can generate one with /create-verification-skill." On yes, invoke `/create-verification-skill` (resolves wherever pstack is installed — workspace, user, or plugin). On no, move on without pushing.
+Before writing, confirm the requested model is available either in the Kiro IDE model selector or in `kiro-cli chat --list-models --format json`. Use the exact model ID supplied by Kiro or the user; if the IDE shows only a display label and no exact ID is available, require the user to provide the ID or use the CLI command instead of guessing. Then update only the custom agent's supported `model` field and preserve every other setting. Do not add per-role mappings to `.kiro/steering` or pass a model on individual subagent calls; unpinned calls use Kiro's selected or default model.
+
+If the user wants model diversity across reviewers, use separately configured named custom agents. If those agents do not exist, fall back to the selected or default model and state that the portable workflow cannot guarantee model diversity.
+
+### 4. Confirm
+
+Report one of these outcomes:
+
+- conversation model selected in Kiro IDE;
+- available CLI model ID identified for the user to select;
+- named custom agent pinned through its `model` field; or
+- no configuration changed because Kiro's selected or default model already covers the request.

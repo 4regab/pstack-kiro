@@ -1,10 +1,7 @@
 ---
 name: principle-build-the-lever
 description: "Apply to any non-trivial work, not just bulk work: edits, migrations, analyses, checks. Build the tool that does it or proves it (codemod, script, generator, or a skill your subagents follow) instead of working by hand. The tool is the artifact a reviewer can rerun."
-always: false
 ---
-
-> Ported from cursor/pstack. Manual invocation only (invoke `/principle-build-the-lever`).
 
 # Build the Lever
 

@@ -1,87 +1,57 @@
 # Verify the result and open a PR
 
-"It compiles" is not evidence. The [Prove It Works principle](../../skills/principle-prove-it-works/SKILL.md) makes the agent check the real artifact before it reports success, and your job is to make "the real artifact" checkable. This page covers stating a finish condition, generating a verification skill for your app, opening the PR, and driving it to merged.
+A green build proves compilation, not behavior. State the real artifact and run the check that observes it.
 
-![A prototype plane flies a real test course while she times it with a stopwatch and robots film and checklist the run; the terminal reads verify: pass, evidence: captured.](./images/verification.jpg)
+![A prototype follows a real test course while evidence is recorded.](./images/verification.jpg)
 
-## State the finish condition up front
-
-Put what done means in the first prompt, in whatever words fit:
+## State the finish condition first
 
 ```text
-/poteto-mode add json output to this command. text output stays byte-identical, the json parses, both run against the sample project. show me the evidence.
+/poteto-mode add JSON output. text output stays byte-identical, JSON parses, and both forms run against the sample project. show commands and results.
 ```
 
-Now the agent has three checks it can run, not a mood to satisfy. When the reply comes back, it should carry the exact commands and outputs. If a check couldn't run, a good reply says "inconclusive", and you should treat a confident reply without evidence as a red flag.
+Match proof to the change:
 
-Match the check to the change:
+- CLI: run the real command.
+- UI: walk the changed flow in the running app.
+- Parser or migration: replay a representative saved input.
+- Performance: compare equivalent before and after measurements.
+- Storage: read back the value from the authoritative store.
 
-- A CLI change runs the real command.
-- A UI change walks the changed flow in the running app.
-- A parser or migration replays a saved input.
-- A perf change compares before and after profiles.
-- A storage change reads back the written value.
+An unavailable check makes the result inconclusive. Report the blocker rather than replacing the check with confidence.
 
-For a small diff you don't fully trust, [`/blast-radius`](../../skills/blast-radius/SKILL.md) finds what it could break elsewhere. It picks the one fact the change is safe because of and proves it by running code instead of writing an essay about it.
-
-## Create a project verification skill
-
-The UI bullet above hides a real requirement. The agent needs a scripted way to drive your app. If your project has one, great. If not, run:
+## Create a project verification skill only when needed
 
 ```text
 /create-verification-skill
 ```
 
-[`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md) interviews the repository, not you. It works out what a user touches, how the app launches locally, what can drive it (an existing harness first, otherwise browser and CDP, a PTY, or plain HTTP), what evidence proves behavior, and whether two instances can run side by side. It asks you only what the code can't answer.
-
-It writes `.cursor/skills/verify-<app>/`, agent-facing instructions with exact Launch, Doctor, Drive, Evidence, and Cleanup sections, plus a feature map under `features/` that indexes what the app does and what result proves each feature works. The skill ships a [worked feature-map example](../../skills/create-verification-skill/references/feature-map-example/) with a README index and one file per feature using the four required H2s. Before handing it over, the generator proves the skill once end to end: launch, doctor check, drive one feature, capture evidence, clean up. If that proof fails, don't use the output.
-
-From then on, "verify it in the app" is a step any agent can execute, in this repo, with no setup conversation.
-
-Once the verify skill works, a [`/swarm`](../../skills/swarm/SKILL.md) can split a full pass by feature-map entry and aggregate the results.
-
-## Keep the verification skill honest
-
-Apps change and feature maps rot. When yours drifts, run:
+[`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md) should reuse an existing harness first. When a reusable agent-facing workflow is justified, its project-local output belongs under:
 
 ```text
-/maintain-verification-skill
+.kiro/skills/verify-<app>/
 ```
 
-[`/maintain-verification-skill`](../../skills/maintain-verification-skill/SKILL.md) audits the generated skill: one read-only source reader per feature in parallel, then one live pass that drives every mapped feature. It ends in exactly one of three outcomes. `clean` means full coverage and nothing to ship. `changed` means one PR of proven corrections, confined to the verification skill's own directory. `blocked` names the blocker. It never edits product code. If the live pass catches a product regression, it reports the regression instead of papering over it in docs.
+A useful verification skill documents Launch, Doctor, Drive, Evidence, and Cleanup, plus a feature map. Prove one complete path before trusting the instructions. Browser drivers, device simulators, PTYs, servers, credentials, and sample data are external prerequisites and must be named explicitly.
 
-## Open the PR
+Use [`/maintain-verification-skill`](../../skills/maintain-verification-skill/SKILL.md) to audit drift. It should report product regressions rather than editing verification instructions to hide them.
+
+## Open a focused PR
 
 ```text
-/poteto-mode open the pr. small ordered commits, evidence in the description.
+/poteto-mode open a focused PR with ordered commits and the verification evidence in the description
 ```
 
-The [Opening a PR playbook](../../skills/poteto-mode/playbooks/opening-a-pr.md) works from a worktree, rebases the work into small ordered commits, cleans the diff, unslops the prose, and returns the PR link. Five narrow PRs beat one fat one, and stacked follow-ups beat a growing branch.
+Opening or updating a PR requires the provider CLI or API, authentication, repository access, and permission to push. pstack does not provision any of them.
 
-## Drive the PR to merge-ready with Babysit
-
-An open PR starts collecting blockers immediately. Checks fail, reviewers comment, trunk moves. Hand that churn to the [Babysit playbook](../../skills/poteto-mode/playbooks/babysit.md):
+## Drive a PR only while an execution surface is running
 
 ```text
-/poteto-mode babysit this pr. get it green.
+/poteto-mode inspect PR 123. report conflicts, unresolved review threads, and failed checks. fix only verified blockers.
 ```
 
-Babysit watches the PR with a bundled watcher and takes blockers in order: conflicts, then review threads, then CI. Every known fix batches into one push, so the checks restart once instead of after every fix. The comment triage is skeptical, because humans and bots file real catches and noise in the same list. A real finding gets a fix, and noise gets dismissed with the disproof posted on the thread. When all you want is status, ask smaller and Babysit answers without starting the loop:
+A local session can inspect and act while it remains active. It does not become a background watcher because the prompt says `babysit`. For detached continuation, start a Kiro cloud session. For scheduled repository checks, configure a Kiro Web Automation. Both require explicit repository access and permissions.
 
-```text
-/poteto-mode check on pr 123. anything outstanding?
-```
+Merging is a separate, potentially irreversible decision. Never infer merge authorization from green checks. Graphite or another stack manager is optional external tooling, not a pstack or Kiro prerequisite.
 
-Babysit stops at merge-ready. It never merges, even with everything green, because merging is a different decision.
-
-## Land the stack with Shipping
-
-Green is not the same as safe. When you're ready to land, say so:
-
-```text
-/poteto-mode land the stack.
-```
-
-The [Shipping playbook](../../skills/poteto-mode/playbooks/shipping.md) verifies each PR independently before it arms anything. One fresh agent per PR proves the behavior live, and the agent that judges a change is never the one that wrote it. Then Shipping lands only the contiguous verified run from the bottom, through Graphite merge-when-ready, and reports the first PR that breaks the chain. A verified PR sitting above an unverified one waits, because merging it would pull the gap in underneath.
-
-Next: [Run work while you sleep](./07-overnight.md).
+Next: [Run autonomous work safely](./07-overnight.md).
